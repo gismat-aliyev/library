@@ -116,6 +116,7 @@ function remove(){
 
 function getUsers(){
     document.getElementById('searchField').dataset.options='user';
+    document.getElementById('searchField').value = '';
     remove();
     //
     removeBookTable();
@@ -151,30 +152,64 @@ function getUsers(){
 }
 
 function getAddModal() {
+    document.getElementById('username').value = '';
+    document.getElementById('password').value = '';
     $('#addModalUser').modal({
          backdrop: 'static'
     });
 }
 
 function addUser(){
-    let user = `username=${$("#username").val()}&password=${$("#password").val()}&fullName=${$("#fullName").val()}&email=${$("#email").val()}&phoneNumber=${$("#phone").val()}&dateOfBirth=${$("#dob").val()}`;
+
+    let username = $("#username").val();
+    let password = $("#password").val();
+    let fullName = $("#fullName").val();
+    let phone = $("#phone").val();
+    let email = $("#email").val();
+    let dob = $("#dob").val();
 
     $.ajax({
-        url: getBaseUrl() + 'library/api/user/addUser',
-        method:'GET',
-        data: user,
+        url: getBaseUrl() + 'library/api/user/getControlUsername',
+        type: 'GET',
+        data :'username='+username,
         dataType: 'JSON',
         success: function (data) {
-            alert(data);
-            if(data === true){
-                $('#addModalUser').modal('hide');
-                getUsers();
+            if(data === true || data === 'true' || data === "true"){
+                alert('Bu istifadəçi adı artıq mövcuddur!');
+            }else{
+                if(password === '' || fullName === '' || dob === ''){
+                    alert('Məlumatlar tam deyil!')
+                }else{
+                    let user = `username=${username}&password=${password}&fullName=${fullName}&email=${email}&phoneNumber=${phone}&dateOfBirth=${dob}`;
+
+                    $.ajax({
+                        url: getBaseUrl() + 'library/api/user/addUser',
+                        method:'GET',
+                        data: user,
+                        dataType: 'JSON',
+                        success: function (data) {
+                            if(data === true){
+                                document.getElementById('username').value = '';
+                                document.getElementById('password').value = '';
+                                document.getElementById('fullName').value = '';
+                                document.getElementById('email').value = '';
+                                document.getElementById('dob').value = '';
+                                document.getElementById('phone').value = '';
+                                $('#addModalUser').modal('hide');
+                                getUsers();
+                            }
+                        },
+                        error:function (){
+                            alert('error');
+                        }
+                    });
+                }
+
             }
-        },
-        error:function (){
-            alert('error');
         }
     });
+
+
 }
 
 function editUser(id) {
@@ -195,24 +230,33 @@ function editUser(id) {
 }
 
 function updateUser(){
-    let user = `userId=${$('#userIdUpdate').val()}&username=${$("#usernameUpdate").val()}&fullName=${$("#fullNameUpdate").val()}&email=${$("#emailUpdate").val()}&phoneNumber=${$("#phoneUpdate").val()}&dateOfBirth=${$("#dobUpdate").val()}`;
+    let username = $("#usernameUpdate").val();
+    let fullName = $("#fullNameUpdate").val();
+    let phone = $("#phoneUpdate").val();
+    let email = $("#emailUpdate").val();
+    let dob = $("#dobUpdate").val();
 
-    $.ajax({
-        url: getBaseUrl() + 'library/api/user/updateUser',
-        method:'GET',
-        data: user,
-        dataType: 'JSON',
-        success: function (data) {
-            alert(data);
-            if(data === true){
-                $('#updateModalUser').modal('hide');
-                getUsers();
+    if(fullName === '' || dob === ''){
+        alert('Məlumatlar tam deyil!')
+    }else{
+        let user = `userId=${$('#userIdUpdate').val()}&username=${username}&fullName=${fullName}&email=${email}&phoneNumber=${phone}&dateOfBirth=${dob}`;
+
+        $.ajax({
+            url: getBaseUrl() + 'library/api/user/updateUser',
+            method:'GET',
+            data: user,
+            dataType: 'JSON',
+            success: function (data) {
+                if(data === true){
+                    $('#updateModalUser').modal('hide');
+                    getUsers();
+                }
+            },
+            error:function (){
+                alert('error');
             }
-        },
-        error:function (){
-            alert('error');
-        }
-    });
+        });
+    }
 }
 
 function deleteUser(id){
@@ -234,6 +278,7 @@ function deleteUser(id){
 
 
 function getBooks(){
+    document.getElementById('searchField').value = '';
     document.getElementById('searchField').dataset.options='book';
     remove();
     //
@@ -271,29 +316,47 @@ function getBooks(){
 }
 
 function getAddBookModal() {
+    document.getElementById('bookName').value = '';
+    document.getElementById('about').value = '';
+    document.getElementById('author').value = '';
+    document.getElementById('createDate').value = '';
     $('#addModalBook').modal({
         backdrop: 'static'
     });
 }
 
 function addBook(){
-    let book = `bookName=${$("#bookName").val()}&author=${$("#author").val()}&about=${$("#about").val()}&status=${$('#status').val()}&createDate=${$("#createDate").val()}`;
+    let bookName = $("#bookName").val();
+    let author = $("#author").val();
+    let about = $("#about").val();
+    let status = $("#status").val();
+    let createDate = $("#createDate").val();
+    if (bookName === '' || author === '' || createDate === ''){
+        alert('Məlumatlar tam deyil!');
+    }else{
+        let book = `bookName=${bookName}&author=${author}&about=${about}&status=${status}&createDate=${createDate}`;
 
-    $.ajax({
-        url: getBaseUrl() + 'library/api/book/addBook',
-        method:'GET',
-        data: book,
-        dataType: 'JSON',
-        success: function (data) {
-            if(data === true){
-                $('#addModalBook').modal('hide');
-                getBooks();
+        $.ajax({
+            url: getBaseUrl() + 'library/api/book/addBook',
+            method:'GET',
+            data: book,
+            dataType: 'JSON',
+            success: function (data) {
+                if(data === true){
+                    document.getElementById('bookName').value = '';
+                    document.getElementById('about').value = '';
+                    document.getElementById('author').value = '';
+                    document.getElementById('createDate').value = '';
+                    $('#addModalBook').modal('hide');
+                    getBooks();
+                }
+            },
+            error:function (){
+                alert('error');
             }
-        },
-        error:function (){
-            alert('error');
-        }
-    });
+        });
+    }
+
 }
 
 function editBook(id) {
@@ -314,23 +377,34 @@ function editBook(id) {
 }
 
 function updateBook(){
-    let book = `bookId=${$("#bookIdUpdate").val()}&bookName=${$("#bookNameUpdate").val()}&author=${$("#authorUpdate").val()}&about=${$("#aboutUpdate").val()}&status=${$('#statusUpdate').val()}&createDate=${$("#createDateUpdate").val()}`;
+    let bookName = $("#bookNameUpdate").val();
+    let author = $("#authorUpdate").val();
+    let about = $("#aboutUpdate").val();
+    let status = $("#statusUpdate").val();
+    let createDate = $("#createDateUpdate").val();
+    if (bookName === '' || author === '' || createDate === ''){
+        alert('Məlumatlar tam deyil!');
+    }else{
+        let book = `bookId=${$("#bookIdUpdate").val()}&bookName=${bookName}&author=${author}&about=${about}&status=${status}&createDate=${createDate}`;
 
-    $.ajax({
-        url: getBaseUrl() + 'library/api/book/updateBook',
-        method:'GET',
-        data: book,
-        dataType: 'JSON',
-        success: function (data) {
-            if(data === true){
-                $('#addModalBook').modal('hide');
-                getBooks();
+        $.ajax({
+            url: getBaseUrl() + 'library/api/book/updateBook',
+            method:'GET',
+            data: book,
+            dataType: 'JSON',
+            success: function (data) {
+                if(data === true){
+                    $('#updateModalBook').modal('hide');
+                    getBooks();
+                }
+            },
+            error:function (){
+                alert('error');
             }
-        },
-        error:function (){
-            alert('error');
-        }
-    });
+        });
+    }
+
+
 }
 
 function deleteBook(id){

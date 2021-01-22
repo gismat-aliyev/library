@@ -29,7 +29,7 @@ public class LibrarySQL {
             "where u.status = 1 and u.role_id = 1 and user_id = :id";
 
     public static final String GET_USER_BY_USERNAME = MAIN_USER_QUERY +
-            "where u.status = 1 and role_id=1 username like :username";
+            "where u.status = 1 and u.role_id=1 and lower(username) like :username";
 
     public static final String GET_USER_BY_LOGIN = "select user_id, password, username,email,phone_number," +
             "full_name,date_of_birth,added_date, ur.role_name as role_name " +
@@ -43,17 +43,19 @@ public class LibrarySQL {
             "where user_id=:userId";
 
     public static final String MAIN_TR_QUERY = "select tu.*,b.book_id as book_id, b.book_name as book_name, b.about as about,b.author as author from books b\n" +
-            "    inner join (select tr_id, t.user_id as user_id, u.username as username,\n" +
+            "    inner join (select tr_id, t.user_id as user_id, u.username as username, u.status as status,\n" +
             "       u.full_name as full_name,u.email as email,\n" +
             "       u.phone_number as phone_number,t.tr_date as tr_date,\n" +
             "       t.tr_status as tr_status, t.book_id as book_id\n" +
             "from transaction t inner join users u on t.user_id = u.user_id) tu on b.book_id=tu.book_id ";
 
-    public static final String GET_TR_BY_USER_ID = MAIN_TR_QUERY + "where tr_status=:status and user_id=:userId";
+    public static final String GET_TR_BY_USER_ID = MAIN_TR_QUERY + "where tr_status=:status and user_id=:userId and tu.status = 1";
 
-    public static final String GET_TR_LIST = MAIN_TR_QUERY + "where tr_status=:status";
+    public static final String GET_TR_LIST = MAIN_TR_QUERY + "where tr_status=:status and tu.status = 1";
 
-    public static final String GET_TR_INFO = MAIN_TR_QUERY + "where tu.tr_id=:trId";
+    public static final String GET_TR_INFO = MAIN_TR_QUERY + "where tu.tr_id=:trId and tu.status = 1";
+
+    public static final String GET_TR_FOR_DELETE = MAIN_TR_QUERY + "where tu.tr_id=:trId";
 
     public static final String MAIN_UPDATE_TR = "update transaction set tr_status=:status where tr_id=:trId";
 

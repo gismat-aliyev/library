@@ -1,6 +1,8 @@
 package az.aist.library.repository.impl;
 
+import az.aist.library.model.Transactions;
 import az.aist.library.model.User;
+import az.aist.library.repository.inter.TransactionRepository;
 import az.aist.library.repository.inter.UserRepository;
 import az.aist.library.repository.mapper.UserMapper;
 import az.aist.library.repository.sql.LibrarySQL;
@@ -10,7 +12,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Repository
@@ -23,11 +27,17 @@ public class UserRepositoryImpl implements UserRepository {
 
     public MD5Generator md5Generator;
 
+    public TransactionRepository transactionRepository;
+
     @Autowired
-    public UserRepositoryImpl(NamedParameterJdbcTemplate namedParameterJdbcTemplate, UserMapper userMapper, MD5Generator md5Generator) {
+    public UserRepositoryImpl(NamedParameterJdbcTemplate namedParameterJdbcTemplate,
+                              UserMapper userMapper,
+                              MD5Generator md5Generator,
+                              TransactionRepository transactionRepository) {
         this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;
         this.userMapper = userMapper;
         this.md5Generator = md5Generator;
+        this.transactionRepository= transactionRepository;
     }
 
     @Override
@@ -47,12 +57,23 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
+    @Transactional
     public boolean deleteUser(Long userId) {
         try{
+            List<Transactions> pendingTr = transactionRepository.getPendingTransactionByUserId(userId);
+            List<Transactions> deliveryTr = transactionRepository.getDeliveryTransactionByUserId(userId);
             MapSqlParameterSource mapSqlParameterSource = new MapSqlParameterSource();
             mapSqlParameterSource.addValue("userId", userId);
             mapSqlParameterSource.addValue("status", 0);
             int count = namedParameterJdbcTemplate.update(LibrarySQL.DELETE_USER, mapSqlParameterSource);
+            if (count > 0){
+                pendingTr.forEach(i ->{
+                    transactionRepository.deleteTransaction(i.getTrId());
+                });
+                deliveryTr.forEach(i->{
+                    transactionRepository.deleteTransaction(i.getTrId());
+                });
+            }
             return count > 0;
         }catch (Exception ex){
             log.error(""+ex);

@@ -91,6 +91,7 @@ public class TransactionRepositoryImpl implements TransactionRepository {
     }
 
     @Override
+    @Transactional
     public boolean deleteTransaction(Long trId) {
         try{
             MapSqlParameterSource mapSqlParameterSource = new MapSqlParameterSource();
@@ -114,7 +115,7 @@ public class TransactionRepositoryImpl implements TransactionRepository {
             MapSqlParameterSource mapSqlParameterSource = new MapSqlParameterSource();
             mapSqlParameterSource.addValue("trId", trId);
             Transactions transaction = namedParameterJdbcTemplate
-                    .query(LibrarySQL.GET_TR_INFO, mapSqlParameterSource, transactionMapper::getTransaction);
+                    .query(LibrarySQL.GET_TR_FOR_DELETE, mapSqlParameterSource, transactionMapper::getTransaction);
 
             bookService.updateBookStatusService(transaction.getBooks().getBookId(),1);
         }catch (Exception ex){

@@ -82,6 +82,12 @@ public class UserController {
         return new ResponseEntity<>(userList, HttpStatus.OK);
     }
 
+    @GetMapping("/getControlUsername")
+    public ResponseEntity<?> controlUserName(@RequestParam("username") String username) {
+        User user = userService.getUserByLoginService(username);
+        return new ResponseEntity<>(user.getUserId() != null, HttpStatus.OK);
+    }
+
     @RequestMapping(value = "/updateUser", method = {RequestMethod.PUT,RequestMethod.GET})
     public ResponseEntity<?> updateUser(@RequestParam(value = "userId") Long userId,
                                         @RequestParam(value = "username") String username,
